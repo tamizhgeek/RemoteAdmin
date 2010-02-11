@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+# twit-gateway.py
+# This file can be run as a deamon, so that it listens to the commands sent as
+# direct messages to the twitgateway account.
+# It executes them, logs them and sends status to throught tweets.
+# It can also execute super user commands.
+
+
+# P.S:Full of crappy code - Feel free to comment and improve
 import os
 import twitter
 import logging
@@ -5,6 +14,8 @@ import simplejson as json
 import time
 
 def init_log():
+    """Method to initialise logger module - refer to python library for better
+    explanation on logging module"""
     
     LOG_FILE_NAME = '/var/log/twit-gateway.log'
 
@@ -15,15 +26,20 @@ def init_log():
     return logger
 
 def get_user_auth_details():
+    """Method that will read the JSON files which stores all the
+    auth-info needed"""
 
     f = open("authinfo.json")
-
+    
     auth_dict = json.loads(f.read())
 
     return auth_dict
 
 def update_auth_dict(auth_dict):
-
+    """Mehod to update the last executed message id. Actually this should write
+    only the updated message id. But yet to figure out the way the way
+    to modify only a part of JSON file. So rewriting every info again :("""
+    
     f = open("authinfo.json","w")
 
     string = json.dumps(auth_dict)
@@ -33,17 +49,19 @@ def update_auth_dict(auth_dict):
 
 def update_direct_messages(log):
     auth_details = get_user_auth_details()
+    #authenticate with twitter
     api = twitter.Api(username=auth_details['auth_dict']['user'], \
                       password=auth_details['auth_dict']['pass'])
 
-    # update the last executed message_id
+    # get the last executed message_id
     last_exec_id = auth_details['last_exec_id'] 
 
     #get direct messages after that id
 
     msg_list = api.GetDirectMessages(since_id = int(last_exec_id))
 
-    #reverse the list so that we can execute commands in the order they are received
+    #reverse the list so that we can execute commands in the order they are
+    #received
 
     msg_list.reverse()
     
@@ -61,16 +79,18 @@ def update_direct_messages(log):
                 command = msg.text.replace("super:", "").strip()
 
                 passwd = auth_details['auth_dict']['su-pass']
-
+                
                 command_status = os.system("echo "+passwd+" | "+\
                                            "sudo -S "+command)
+                # Change the last executed msg id to recently executed msg id
                 last_exec_id = msg.id
                 if command_status is 0:
-                
+                    # log the executed command and also tweet the status
                     log.info(command+"Executed successfully!")
+                    api.UpdateStatus(command+"success!")
                 else:
-
                     log.info(command+"Failed!")
+                    api.UpdateStatus(command+"fail!")
             else:
 
                 print "No super user acess! Command ignored"
@@ -81,11 +101,13 @@ def update_direct_messages(log):
         
             command_status = os.system(command)
             last_exec_id = msg.id
-            if command_status is 0:
-                
-                log.info(command+"Executed successfully!")
-            else:
 
+            if command_status is 0:
+                api.UpdateStatus(command+"success!")
+                log.info(command+"Executed successfully!")
+
+            else:
+                api.UpdateStatus(command+"fail!")
                 log.info(command+"Failed!")
 
 
@@ -104,3 +126,5 @@ if __name__ == "__main__":
         time.sleep(10)
 
         update_direct_messages(log)
+
+        

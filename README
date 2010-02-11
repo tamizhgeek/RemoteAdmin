@@ -1,0 +1,6 @@
+A stupid deamon like code - which listens for twitter direct message through
+which we can send commands so that this deamon executes it, logs it and tweets its results.
+
+Configure auth_info.json accordingly.
+
+Please comment so that I can improve my code.
