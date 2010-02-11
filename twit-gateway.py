@@ -10,6 +10,7 @@
 import os
 import twitter
 import logging
+import logging.handlers
 import simplejson as json
 import time
 
@@ -21,7 +22,8 @@ def init_log():
 
     logger = logging.getLogger("twit-gateway")
     logger.setLevel(logging.INFO)
-    logger.addHandler(logging.xhandlers.RotatingFileHandler(LOG_FILE_NAME, maxBytes = 2000))
+    handler = logging.handlers.RotatingFileHandler(LOG_FILE_NAME, maxBytes = 2000)
+    logger.addHandler(handler)
                
     return logger
 
@@ -30,8 +32,9 @@ def get_user_auth_details():
     auth-info needed"""
 
     f = open("authinfo.json")
+    string = f.read()
     
-    auth_dict = json.loads(f.read())
+    auth_dict = json.loads(string)
 
     return auth_dict
 
@@ -42,9 +45,9 @@ def update_auth_dict(auth_dict):
     
     f = open("authinfo.json","w")
 
-    string = json.dumps(auth_dict)
+    string = json.dumps(auth_dict, indent = 4)
 
-    f.write(string, indent = 4)
+    f.write(string)
     
 
 def update_direct_messages(log):
@@ -58,7 +61,7 @@ def update_direct_messages(log):
 
     #get direct messages after that id
 
-    msg_list = api.GetDirectMessages(since_id = int(last_exec_id))
+    msg_list = api.GetDirectMessages(since_id = last_exec_id)
 
     #reverse the list so that we can execute commands in the order they are
     #received
@@ -86,11 +89,11 @@ def update_direct_messages(log):
                 last_exec_id = msg.id
                 if command_status is 0:
                     # log the executed command and also tweet the status
-                    log.info(command+"Executed successfully!")
-                    api.UpdateStatus(command+"success!")
+                    log.info(command+" Executed successfully!")
+                    api.PostUpdate(command+" success!")
                 else:
-                    log.info(command+"Failed!")
-                    api.UpdateStatus(command+"fail!")
+                    log.info(command+" Failed!")
+                    api.PostUpdate(command+" fail!")
             else:
 
                 print "No super user acess! Command ignored"
@@ -103,12 +106,12 @@ def update_direct_messages(log):
             last_exec_id = msg.id
 
             if command_status is 0:
-                api.UpdateStatus(command+"success!")
-                log.info(command+"Executed successfully!")
+                api.PostUpdate(command+" success!")
+                log.info(command+" Executed successfully!")
 
             else:
-                api.UpdateStatus(command+"fail!")
-                log.info(command+"Failed!")
+                api.PostUpdate(command+" fail!")
+                log.info(command+" Failed!")
 
 
     auth_details['last_exec_id'] = last_exec_id
@@ -119,12 +122,10 @@ def update_direct_messages(log):
         
 if __name__ == "__main__":
 
-    log = init_log
-
+    log = init_log()
     while(1):
 
-        time.sleep(10)
+       update_direct_messages(log)
 
-        update_direct_messages(log)
-
+       time.sleep(10)
         
