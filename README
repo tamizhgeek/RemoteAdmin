@@ -1,6 +1,16 @@
 A stupid deamon like code - which listens for twitter direct message through
 which we can send commands so that this deamon executes it, logs it and tweets its results.
 
-Configure auth_info.json accordingly.
+
+SETUP:
+=====
+1. First create a twitter account to which you re going to send commands as direct messages. Let me call this as gateway account
+2. Make the gateway account follow your twitter account and vice versa.
+3. Update the username and password of gateway account in sample_authinfo.json.
+4. Update also the root password, and the id, screen name of the account from which you want to send super user commands.
+5. Leave the last_exec_id as empty as it is.
+6. Create a log file if neccessary and give it's path in LOG_FILE_NAME variable of twit-gateway.py
+7. Rename sample_authinfo.json as authinfo.json
+8. Now run twit-gateway.py! 
 
 Please comment so that I can improve my code.
