@@ -75,9 +75,7 @@ def update_direct_messages(log):
 
         if msg.text.startswith("super:"):
 
-            if msg.sender_id is auth_details['auth_dict']['su-id'] and \
-                   msg.sender_screen_name is \
-                   auth_details['auth_dict']['su-screen_name']:
+            if msg.sender_id == auth_details['auth_dict']['su-id']:
 
                 command = msg.text.replace("super:", "").strip()
 
@@ -86,7 +84,7 @@ def update_direct_messages(log):
                 command_status = os.system("echo "+passwd+" | "+\
                                            "sudo -S "+command)
                 # Change the last executed msg id to recently executed msg id
-                last_exec_id = msg.id
+               
                 if command_status is 0:
                     # log the executed command and also tweet the status
                     log.info(command+" Executed successfully!")
@@ -97,22 +95,23 @@ def update_direct_messages(log):
             else:
 
                 print "No super user acess! Command ignored"
+               
 
         else:
 
             command = msg.text.strip()
         
             command_status = os.system(command)
-            last_exec_id = msg.id
+           
 
             if command_status is 0:
                 api.PostUpdate(command+" success!")
                 log.info(command+" Executed successfully!")
-
             else:
                 api.PostUpdate(command+" fail!")
                 log.info(command+" Failed!")
 
+        last_exec_id = msg.id
 
     auth_details['last_exec_id'] = last_exec_id
     update_auth_dict(auth_details)
