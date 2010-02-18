@@ -11,8 +11,9 @@ import os
 import twitter
 import logging
 import logging.handlers
-import simplejson as json
 import time
+
+import authinfo
 
 def init_log():
     """Method to initialise logger module - refer to python library for better
@@ -27,31 +28,9 @@ def init_log():
                
     return logger
 
-def get_user_auth_details():
-    """Method that will read the JSON files which stores all the
-    auth-info needed"""
-
-    f = open("authinfo.json")
-    string = f.read()
-    
-    auth_dict = json.loads(string)
-
-    return auth_dict
-
-def update_auth_dict(auth_dict):
-    """Mehod to update the last executed message id. Actually this should write
-    only the updated message id. But yet to figure out the way the way
-    to modify only a part of JSON file. So rewriting every info again :("""
-    
-    f = open("authinfo.json","w")
-
-    string = json.dumps(auth_dict, indent = 4)
-
-    f.write(string)
-    
 
 def update_direct_messages(log):
-    auth_details = get_user_auth_details()
+    auth_details = authinfo.auth_dict
     #authenticate with twitter
     api = twitter.Api(username=auth_details['auth_dict']['user'], \
                       password=auth_details['auth_dict']['pass'])
@@ -113,8 +92,7 @@ def update_direct_messages(log):
 
         last_exec_id = msg.id
 
-    auth_details['last_exec_id'] = last_exec_id
-    update_auth_dict(auth_details)
+    authinfo.auth_dict['last_exec_id'] = last_exec_id
 
 
 

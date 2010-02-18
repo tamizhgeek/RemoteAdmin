@@ -3,19 +3,10 @@
 import twitter
 import commands
 import time
-import simplejson as json
 import os
 import sys
 
-def load_auth_info():
-    """Loads the twitter auth info from authinfo.json"""
-    f = open("authinfo.json")
-
-    string = f.read()
-
-    auth_info = json.loads(string)
-
-    return auth_info
+import authinfo
 
 def temp_monitor():
     """This method checks the CPU temp and tweets it periodically!"""
@@ -49,7 +40,7 @@ def temp_monitor():
         if hardware == 4 :
             temp = open("/sys/devices/LNXSYSTM:00/LNXTHERM:00/LNXTHERM:01/thermal_zone/temp").read().strip().rstrip('000')
 
-        auth_info = load_auth_info()
+        auth_info = authinfo.auth_dict
 
         api = twitter.Api(username=auth_info['auth_dict']['user'], \
                       password=auth_info['auth_dict']['pass'])

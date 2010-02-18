@@ -1,3 +1,4 @@
 /twit-gateway.py~
 *~
-/authinfo.json
+/twitter/authinfo.py
+*.pyc
