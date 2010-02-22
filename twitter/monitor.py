@@ -13,6 +13,8 @@ def temp_monitor():
 
     hardware = 0
 
+    critical_level = 50
+
     if os.path.exists("/sys/devices/LNXSYSTM:00/LNXTHERM:00/LNXTHERM:01/thermal_zone/temp") == True:
         hardware = 4
 		
@@ -39,14 +41,15 @@ def temp_monitor():
             temp = open("/proc/acpi/thermal_zone/THR1/temperature").read().strip().lstrip('temperature :').rstrip(' C')
         if hardware == 4 :
             temp = open("/sys/devices/LNXSYSTM:00/LNXTHERM:00/LNXTHERM:01/thermal_zone/temp").read().strip().rstrip('000')
+        if int(temp) > critical_level:
+            
+            auth_info = authinfo.auth_dict
 
-        auth_info = authinfo.auth_dict
-
-        api = twitter.Api(username=auth_info['auth_dict']['user'], \
+            api = twitter.Api(username=auth_info['auth_dict']['user'], \
                       password=auth_info['auth_dict']['pass'])
-
         
-        api.PostUpdate("The CPU temperature is currently at "+temp +" Celsius")
+            api.PostUpdate("Warning temperature above critical level :"+temp)
+            #api.PostUpdate("The CPU temperature is currently at "+temp +" Celsius")
 
         time.sleep(5000)
 

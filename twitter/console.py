@@ -2,7 +2,7 @@
 # twit-gateway.py
 # This file can be run as a deamon, so that it listens to the commands sent as
 # direct messages to the twitgateway account.
-# It executes them, logs them and sends status to throught tweets.
+# It executes them, logs them and sends status through tweets.
 # It can also execute super user commands.
 
 
@@ -12,6 +12,7 @@ import twitter
 import logging
 import logging.handlers
 import time
+import simplejson as json
 
 import authinfo
 
@@ -28,15 +29,51 @@ def init_log():
                
     return logger
 
+def get_last_id():
+    """ Return the last executed message id to the caller"""
+    try:
+        
+        id_file = open("last_exec_id.json")
+
+        string = id_file.read()
+
+        msg_id = json.loads(string)
+
+        id_file.close()
+
+        return int(msg_id['last_exec_id'])
+
+    except:
+
+        return 0
+        
+   
+
+def set_last_exec_id(id):
+
+    id_file = open("last_exec_id.json",'w')
+
+    string = json.dumps({'last_exec_id':id})
+
+    id_file.write(string)
+
+    id_file.close()
+    
 
 def update_direct_messages(log):
-    auth_details = authinfo.auth_dict
+    auth_dict = authinfo.auth_dict
     #authenticate with twitter
-    api = twitter.Api(username=auth_details['auth_dict']['user'], \
-                      password=auth_details['auth_dict']['pass'])
+    try:
+
+        api = twitter.Api(username=auth_dict['user'], \
+                      password=auth_dict['pass'])
+    except:
+
+        print "Auth failed - recheck the auth params and connectivity!"
 
     # get the last executed message_id
-    last_exec_id = auth_details['last_exec_id'] 
+    last_exec_id = get_last_id()
+    
 
     #get direct messages after that id
 
@@ -54,11 +91,11 @@ def update_direct_messages(log):
 
         if msg.text.startswith("super:"):
 
-            if msg.sender_id == auth_details['auth_dict']['su-id']:
+            if msg.sender_id == auth_dict['su-id']:
 
                 command = msg.text.replace("super:", "").strip()
 
-                passwd = auth_details['auth_dict']['su-pass']
+                passwd = auth_dict['su-pass']
                 
                 command_status = os.system("echo "+passwd+" | "+\
                                            "sudo -S "+command)
@@ -92,7 +129,7 @@ def update_direct_messages(log):
 
         last_exec_id = msg.id
 
-    authinfo.auth_dict['last_exec_id'] = last_exec_id
+    set_last_exec_id(last_exec_id)
 
 
 
@@ -100,7 +137,7 @@ def update_direct_messages(log):
 if __name__ == "__main__":
 
     log = init_log()
-    while(1):
+    while True:
 
        update_direct_messages(log)
 
