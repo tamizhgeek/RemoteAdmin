@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# twit-gateway.py
+# console.py
 # This file can be run as a deamon, so that it listens to the commands sent as
 # direct messages to the twitgateway account.
 # It executes them, logs them and sends status through tweets.
@@ -7,24 +7,26 @@
 
 
 # P.S:Full of crappy code - Feel free to comment and improve
+
 import os
+import sys
 import twitter
 import logging
 import logging.handlers
 import time
 import simplejson as json
 
-import authinfo
+import admininfo
 
 def init_log():
     """Method to initialise logger module - refer to python library for better
     explanation on logging module"""
     
-    LOG_FILE_NAME = '/var/log/twit-gateway.log'
+    LOG_FILE_NAME = admininfo.log_file_name
 
-    logger = logging.getLogger("twit-gateway")
+    logger = logging.getLogger("remote-admin")
     logger.setLevel(logging.INFO)
-    handler = logging.handlers.RotatingFileHandler(LOG_FILE_NAME, maxBytes = 2000)
+    handler = logging.handlers.RotatingFileHandler(LOG_FILE_NAME, maxBytes = 2000000)
     logger.addHandler(handler)
                
     return logger
@@ -61,7 +63,9 @@ def set_last_exec_id(id):
     
 
 def update_direct_messages(log):
-    auth_dict = authinfo.auth_dict
+
+    auth_dict = admininfo.auth_dict
+
     #authenticate with twitter
     try:
 
@@ -70,6 +74,7 @@ def update_direct_messages(log):
     except:
 
         print "Auth failed - recheck the auth params and connectivity!"
+        sys.exit(1)
 
     # get the last executed message_id
     last_exec_id = get_last_id()
@@ -77,8 +82,14 @@ def update_direct_messages(log):
 
     #get direct messages after that id
 
-    msg_list = api.GetDirectMessages(since_id = last_exec_id)
+    try:
 
+        msg_list = api.GetDirectMessages(since_id = last_exec_id)
+
+    except:
+
+        print "Oops! Connection failed! Try again"
+        sys.exit(1)
     #reverse the list so that we can execute commands in the order they are
     #received
 
@@ -137,6 +148,8 @@ def update_direct_messages(log):
 if __name__ == "__main__":
 
     log = init_log()
+
+    
     while True:
 
        update_direct_messages(log)
