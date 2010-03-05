@@ -3,3 +3,5 @@
 /twitter/authinfo.py
 *.pyc
 *#
+*.log
+*.json
