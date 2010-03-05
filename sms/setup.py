@@ -11,7 +11,7 @@ def init_log(name):
     LOG_FILE_NAME = admininfo.log_file_name
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
-    handler = logging.handlers.RotatingFileHandler(LOG_FILE_NAME, maxBytes = 2000000)g
+    handler = logging.handlers.RotatingFileHandler(LOG_FILE_NAME, maxBytes = 2000000)
     logger.addHandler(handler)
 
     return logger
@@ -22,19 +22,19 @@ def init_log(name):
 def init_db():
     """Method to initialise DB connections"""
     
-    host = admininfo.auth_dict['db-host']#host="localhost"
+    host = admininfo.auth_dict['db-host']
+    
+    user = admininfo.auth_dict['db-user']
 
-	user = admininfo.auth_dict['db-user']#user="root"
+    passwd = admininfo.auth_dict['db-pass']
 
-	passwd = admininfo.auth_dict['db-pass']#passwd="cse25"
-
-	db = admininfo.auth_dict['db-name']#db="smsgw"
+    db = admininfo.auth_dict['db-name']
 
     
-#creates a database object for corresponding config
+    #creates a database object for corresponding config
 
-	db=MySQLdb.connect(host,user,passwd,db)
+    db=MySQLdb.connect(host,user,passwd,db)
 
-	cursor=db.cursor()
+    cursor=db.cursor()
 
-	return cursor
+    return cursor
